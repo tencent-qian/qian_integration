@@ -9,21 +9,25 @@ export const siteConfig = {
       href: "/",
     },
     {
+      label: "template",
+      href: "/template",
+    },
+    {
       label: "Docs",
-      href: "/docs",
+      href: "https://qian.tencent.com/developers/partner/overview",
     },
-    {
-      label: "Pricing",
-      href: "/pricing",
-    },
-    {
-      label: "Blog",
-      href: "/blog",
-    },
-    {
-      label: "About",
-      href: "/about",
-    },
+    // {
+    //   label: "Pricing",
+    //   href: "/pricing",
+    // },
+    // {
+    //   label: "Blog",
+    //   href: "/blog",
+    // },
+    // {
+    //   label: "About",
+    //   href: "/about",
+    // },
   ],
   navMenuItems: [
     {
