@@ -11,7 +11,6 @@ import {
   Divider,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import useSWR, { mutate } from "swr";
 import { useLocalStorage, useIsClient } from "usehooks-ts";
 import { toast } from "react-toastify";
 
@@ -59,7 +58,22 @@ const UserInfoPage: React.FC = () => {
     try {
       const response = await fetch("/api", {
         method: "POST",
-        body: JSON.stringify(userInfo),
+        headers: {
+          "Content-Type": "application/json",
+          "X-TC-Action": "ChannelDescribeEmployees",
+        },
+        body: JSON.stringify({
+          ...userInfo,
+          payload: {
+            Filters: [
+              {
+                Key: "Status",
+                Values: ["IsVerified"],
+              },
+            ],
+            Limit: 20,
+          },
+        }),
       })
         .then((res) => res.json())
         .catch((e) => {});

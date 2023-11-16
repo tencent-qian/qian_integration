@@ -10,7 +10,10 @@ export async function POST(request: Request) {
     appId,
     proxyOrganizationOpenId,
     proxyOperatorOpenId,
+    payload,
   } = await request.json();
+
+  const Action = request.headers.get("X-TC-Action") ?? "UNknown-Action";
 
   const clientConfig = {
     credential: {
@@ -37,19 +40,16 @@ export async function POST(request: Request) {
 
   const params = {
     Agent,
-    Limit: 20,
-    Filters: [
-      {
-        Key: "Status",
-        Values: ["IsVerified"],
-      },
-    ],
+    ...payload,
   };
+  console.log("------请求Action-----", Action);
+  console.log("------请求参数-----", params);
   try {
-    let data = (await client.ChannelDescribeEmployees(params)) as any;
+    let data = (await client?.[Action](params)) as any;
+    console.log("------返回结果-----", data);
     return NextResponse.json(data);
   } catch (e) {
-    console.log(e);
+    console.log("------错误信息-----", e);
     return NextResponse.json({ error: `${e}` }, { status: 500 });
   }
 }
