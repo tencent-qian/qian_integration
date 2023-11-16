@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import {
   Input,
@@ -12,6 +11,9 @@ import {
   Divider,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
+import useSWR, { mutate } from "swr";
+import { useLocalStorage, useIsClient } from "usehooks-ts";
+import { toast } from "react-toastify";
 
 interface UserInfo {
   appId: string;
@@ -24,55 +26,62 @@ interface FormData extends UserInfo {
   secretKey: string;
 }
 
+interface Role {
+  RoleId: string;
+  RoleName: string;
+}
+interface Employee {
+  DisplayName: string;
+  Roles: Role[];
+}
+
 const UserInfoPage: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    secretId: "",
-    secretKey: "",
+  const isClient = useIsClient();
+  const [userInfo, setUserInfo] = useLocalStorage("userInfo", {
     appId: "",
     proxyOrganizationOpenId: "",
     proxyOperatorOpenId: "",
+    secretId: "",
+    secretKey: "",
   });
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const route = useRouter();
-  useEffect(() => {
-    // 页面加载时，尝试从 localStorage 中获取用户信息
-    const secretId = localStorage.getItem("secretId");
-    const secretKey = localStorage.getItem("secretKey");
-    const appId = localStorage.getItem("appId") || "";
-    const proxyOrganizationOpenId =
-      localStorage.getItem("proxyOrganizationOpenId") || "";
-    const proxyOperatorOpenId =
-      localStorage.getItem("proxyOperatorOpenId") || "";
-
-    if (secretId && secretKey) {
-      // 如果 secretId 和 secretKey 存在，假设其他信息也存在，设置用户信息
-      setUserInfo({
-        appId,
-        proxyOrganizationOpenId,
-        proxyOperatorOpenId,
-      });
-    }
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
+    setUserInfo((prevUserInfo) => ({
+      ...prevUserInfo,
       [name]: value,
     }));
   };
 
+  const fetchUserInfo = async (userInfo: UserInfo) => {
+    try {
+      const response = await fetch("/api", {
+        method: "POST",
+        body: JSON.stringify(userInfo),
+      })
+        .then((res) => res.json())
+        .catch((e) => {});
+
+      const employee = response?.Employees[0] as Employee;
+
+      setEmployee(employee);
+    } catch (e) {
+      toast.dismiss();
+      toast((e as any)?.message);
+      console.log(e);
+    }
+  };
+  useEffect(() => {
+    isClient && fetchUserInfo(userInfo);
+  }, [userInfo]);
+
   const handleSubmit = () => {
-    // 存储表单数据到 localStorage
-    Object.entries(formData).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
-    // 更新用户信息状态
-    const { secretId, secretKey, ...rest } = formData;
-    setUserInfo(rest);
+    fetchUserInfo(userInfo);
   };
 
-  if (userInfo) {
+  if (employee) {
     // 如果用户信息存在，显示用户信息
     return (
       <Card>
@@ -83,6 +92,10 @@ const UserInfoPage: React.FC = () => {
           <Snippet hideSymbol>{userInfo.proxyOrganizationOpenId}</Snippet>
           <strong>ProxyOperatorOpenId:</strong>{" "}
           <Snippet hideSymbol>{userInfo.proxyOperatorOpenId}</Snippet>
+          <strong>DisplayName:</strong>{" "}
+          <Snippet hideSymbol>{employee.DisplayName}</Snippet>
+          <strong>RoleName:</strong>{" "}
+          <Snippet hideSymbol>{employee.Roles[0].RoleName}</Snippet>
           <Divider></Divider>
           <h1>功能一览</h1>
           <Divider></Divider>
@@ -123,6 +136,8 @@ const UserInfoPage: React.FC = () => {
     );
   } else {
     // 如果用户信息不存在，显示信息填写表单
+    // toast.dismiss();
+    // toast(error.message);
     return (
       <Card>
         <CardHeader className="flex flex-col bold">
@@ -135,7 +150,7 @@ const UserInfoPage: React.FC = () => {
             name="appId"
             label="AppId"
             labelPlacement="outside"
-            value={formData.appId}
+            value={userInfo.appId}
             onChange={handleChange}
           />
           <Input
@@ -144,7 +159,7 @@ const UserInfoPage: React.FC = () => {
             placeholder="请填写您的ProxyOrganizationOpenId"
             name="proxyOrganizationOpenId"
             labelPlacement="outside"
-            value={formData.proxyOrganizationOpenId}
+            value={userInfo.proxyOrganizationOpenId}
             onChange={handleChange}
           />
           <Input
@@ -153,7 +168,7 @@ const UserInfoPage: React.FC = () => {
             placeholder="请填写ProxyOperator的OpenId"
             name="proxyOperatorOpenId"
             labelPlacement="outside"
-            value={formData.proxyOperatorOpenId}
+            value={userInfo.proxyOperatorOpenId}
             onChange={handleChange}
           />
           <Input
@@ -162,7 +177,7 @@ const UserInfoPage: React.FC = () => {
             placeholder="请填写您的Secret Id"
             name="secretId"
             labelPlacement="outside"
-            value={formData.secretId}
+            value={userInfo.secretId}
             onChange={handleChange}
           />
           <Input
@@ -172,7 +187,7 @@ const UserInfoPage: React.FC = () => {
             name="secretKey"
             type="password"
             labelPlacement="outside"
-            value={formData.secretKey}
+            value={userInfo.secretKey}
             onChange={handleChange}
           />
           <Button onClick={handleSubmit} color="secondary">

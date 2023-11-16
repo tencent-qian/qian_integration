@@ -12,13 +12,6 @@ export async function POST(request: Request) {
     proxyOperatorOpenId,
   } = await request.json();
 
-  console.log(
-    secretId,
-    secretKey,
-    appId,
-    proxyOrganizationOpenId,
-    proxyOperatorOpenId
-  );
   const clientConfig = {
     credential: {
       secretId: secretId,
@@ -44,13 +37,19 @@ export async function POST(request: Request) {
 
   const params = {
     Agent,
-    StartDate: "2023-11-01",
-    EndDate: "2023-11-30",
+    Limit: 20,
+    Filters: [
+      {
+        Key: "Status",
+        Values: ["IsVerified"],
+      },
+    ],
   };
   try {
-    let data = (await client.DescribeUsage(params)) as any;
+    let data = (await client.ChannelDescribeEmployees(params)) as any;
     return NextResponse.json(data);
   } catch (e) {
-    console.error(e);
+    console.log(e);
+    return NextResponse.json({ error: `${e}` }, { status: 500 });
   }
 }
