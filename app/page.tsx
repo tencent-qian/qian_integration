@@ -87,9 +87,6 @@ const UserInfoPage: React.FC = () => {
       console.log(e);
     }
   };
-  useEffect(() => {
-    isClient && fetchUserInfo(userInfo);
-  }, [userInfo]);
 
   const handleSubmit = () => {
     fetchUserInfo(userInfo);
@@ -98,9 +95,9 @@ const UserInfoPage: React.FC = () => {
   if (employee) {
     // 如果用户信息存在，显示用户信息
     return (
-      <Card>
+      <Card className="py-8 px-12">
         <CardHeader className="flex flex-col bold">用户信息</CardHeader>
-        <CardBody className="gap-8 px-10 py-5">
+        <CardBody className="gap-12 px-10 py-12">
           <strong>AppId:</strong> <Snippet hideSymbol>{userInfo.appId}</Snippet>
           <strong>ProxyOrganizationOpenId:</strong>
           <Snippet hideSymbol>{userInfo.proxyOrganizationOpenId}</Snippet>
@@ -153,11 +150,11 @@ const UserInfoPage: React.FC = () => {
     // toast.dismiss();
     // toast(error.message);
     return (
-      <Card>
-        <CardHeader className="flex flex-col bold">
-          <h1>请填写您的测试环境的相关信息</h1>
+      <Card className="shadow-xl transition:ease-in">
+        <CardHeader className="flex flex-col bold text-xl">
+          请填写您的测试环境的相关信息
         </CardHeader>
-        <CardBody className="gap-5 px-10 py-5">
+        <CardBody className="gap-8 px-12 py-5">
           <Input
             placeholder="请填写您应用的AppId"
             required
@@ -204,7 +201,7 @@ const UserInfoPage: React.FC = () => {
             value={userInfo.secretKey}
             onChange={handleChange}
           />
-          <Button onClick={handleSubmit} color="secondary">
+          <Button className="my-8 mx-12 py-4" onClick={handleSubmit} color="secondary">
             提交
           </Button>
         </CardBody>
