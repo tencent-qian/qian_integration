@@ -7,11 +7,9 @@ import {
   CardHeader,
   Snippet,
   CardBody,
-  CardFooter,
   Divider,
   Accordion,
   AccordionItem,
-  Spacer,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { useLocalStorage, useIsClient } from "usehooks-ts";
