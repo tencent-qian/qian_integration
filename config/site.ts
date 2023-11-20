@@ -9,10 +9,6 @@ export const siteConfig = {
       href: "/",
     },
     {
-      label: "templates",
-      href: "/templates",
-    },
-    {
       label: "Docs",
       href: "https://qian.tencent.com/developers/partner/overview",
     },

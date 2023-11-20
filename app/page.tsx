@@ -9,6 +9,9 @@ import {
   CardBody,
   CardFooter,
   Divider,
+  Accordion,
+  AccordionItem,
+  Spacer,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { useLocalStorage, useIsClient } from "usehooks-ts";
@@ -56,12 +59,8 @@ const UserInfoPage: React.FC = () => {
 
   const fetchUserInfo = async (userInfo: UserInfo) => {
     try {
-      const response = await fetch("/api", {
+      const response = await fetch("/api/ChannelDescribeEmployees", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-TC-Action": "ChannelDescribeEmployees",
-        },
         body: JSON.stringify({
           ...userInfo,
           payload: {
@@ -96,24 +95,42 @@ const UserInfoPage: React.FC = () => {
     // 如果用户信息存在，显示用户信息
     return (
       <Card className="py-8 px-12">
-        <CardHeader className="flex flex-col bold">用户信息</CardHeader>
-        <CardBody className="gap-12 px-10 py-12">
-          <strong>AppId:</strong> <Snippet hideSymbol>{userInfo.appId}</Snippet>
-          <strong>ProxyOrganizationOpenId:</strong>
-          <Snippet hideSymbol>{userInfo.proxyOrganizationOpenId}</Snippet>
-          <strong>ProxyOperatorOpenId:</strong>{" "}
-          <Snippet hideSymbol>{userInfo.proxyOperatorOpenId}</Snippet>
-          <strong>DisplayName:</strong>{" "}
-          <Snippet hideSymbol>{employee.DisplayName}</Snippet>
-          <strong>RoleName:</strong>{" "}
-          <Snippet hideSymbol>{employee.Roles[0].RoleName}</Snippet>
+        <CardHeader className="flex flex-col font-bold text-2xl">
+          欢迎使用电子合同测试环境
+        </CardHeader>
+        <CardBody className="gap-4 px-10 py-12">
+          <Accordion>
+            <AccordionItem
+              className="flex flex-col"
+              startContent={
+                <div className="gap">
+                  <span>
+                    <strong>AppId:</strong>
+                  </span>
+                  <Snippet hideSymbol>{userInfo.appId}</Snippet>
+                </div>
+              }
+            >
+              <div className="flex flex-col">
+                <strong>AppId:</strong>{" "}
+                <Snippet hideSymbol>{userInfo.appId}</Snippet>
+                <strong>ProxyOrganizationOpenId:</strong>
+                <Snippet hideSymbol>{userInfo.proxyOrganizationOpenId}</Snippet>
+                <strong>ProxyOperatorOpenId:</strong>{" "}
+                <Snippet hideSymbol>{userInfo.proxyOperatorOpenId}</Snippet>
+                <strong>DisplayName:</strong>{" "}
+                <Snippet hideSymbol>{employee.DisplayName}</Snippet>
+                <strong>RoleName:</strong>{" "}
+                <Snippet hideSymbol>{employee.Roles[0].RoleName}</Snippet>
+              </div>
+            </AccordionItem>
+          </Accordion>
           <Divider></Divider>
-          <h1>功能一览</h1>
-          <Divider></Divider>
-          <div className="flex gap-8">
+          <span className="text-xl">功能一览</span>
+          <div className="flex gap-8 px-8 py-8 shadow rounded-lg">
             <Card
               radius="lg"
-              className="px-12 py-12"
+              className="px-12 py-12 bg-sky-200 hover:bg-sky-500"
               isPressable
               onClick={() => {
                 route.push("/templates");
@@ -123,23 +140,23 @@ const UserInfoPage: React.FC = () => {
             </Card>
             <Card
               radius="lg"
-              className="px-12 py-12"
-              isPressable
-              onClick={() => {
-                route.push("/contracts");
-              }}
-            >
-              合同列表
-            </Card>
-            <Card
-              radius="lg"
-              className="px-12 py-12"
+              className="px-12 py-12 bg-pink-50 hover:bg-pink-500"
               isPressable
               onClick={() => {
                 route.push("/seals");
               }}
             >
               印章列表
+            </Card>
+            <Card
+              radius="lg"
+              className="px-12 py-12 bg-amber-50 hover:bg-amber-500"
+              isPressable
+              onClick={() => {
+                route.push("/employee");
+              }}
+            >
+              员工列表
             </Card>
           </div>
         </CardBody>
@@ -151,7 +168,7 @@ const UserInfoPage: React.FC = () => {
     // toast(error.message);
     return (
       <Card className="shadow-xl transition:ease-in">
-        <CardHeader className="flex flex-col bold text-xl">
+        <CardHeader className="flex flex-col font-bold text-xl">
           请填写您的测试环境的相关信息
         </CardHeader>
         <CardBody className="gap-8 px-12 py-5">
@@ -201,7 +218,11 @@ const UserInfoPage: React.FC = () => {
             value={userInfo.secretKey}
             onChange={handleChange}
           />
-          <Button className="my-8 mx-12 py-4" onClick={handleSubmit} color="secondary">
+          <Button
+            className="my-8 mx-12 py-4"
+            onClick={handleSubmit}
+            color="secondary"
+          >
             提交
           </Button>
         </CardBody>

@@ -1,12 +1,11 @@
-/***
- * /templates/api
- * 实际没必要这么写，这里只是为了演示，不同路径下自己的api
- */
 import { NextResponse } from "next/server";
 
 // Depends on tencentcloud-sdk-nodejs version 4.0.3 or higher
 const tencentcloud = require("tencentcloud-sdk-nodejs-essbasic");
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params: pathParams }: { params: { action: string } }
+) {
   const EssbasicClient = tencentcloud.essbasic.v20210526.Client;
   const {
     secretId,
@@ -14,7 +13,12 @@ export async function POST(request: Request) {
     appId,
     proxyOrganizationOpenId,
     proxyOperatorOpenId,
+    payload,
   } = await request.json();
+
+  console.log("------请求参数-----", pathParams);
+
+  const Action = pathParams.action ?? "UNNAMED_ACTION";
 
   const clientConfig = {
     credential: {
@@ -41,19 +45,16 @@ export async function POST(request: Request) {
 
   const params = {
     Agent,
-    Limit: 20,
-    Filters: [
-      {
-        Key: "Status",
-        Values: ["IsVerified"],
-      },
-    ],
+    ...payload,
   };
+  console.log("------请求Action-----", Action);
+  console.log("------请求参数-----", params);
   try {
-    let data = (await client.ChannelDescribeEmployees(params)) as any;
+    let data = (await client?.[Action](params)) as any;
+    console.log("------返回结果-----", data);
     return NextResponse.json(data);
   } catch (e) {
-    console.log(e);
+    console.log("------错误信息-----", e);
     return NextResponse.json({ error: `${e}` }, { status: 500 });
   }
 }

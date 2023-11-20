@@ -1,7 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { title } from "@/components/primitives";
-import { useLocalStorage, useEffectOnce } from "usehooks-ts";
+import React, { useEffect, useState } from "react";
+import { useIsClient } from "usehooks-ts";
 import {
   Table,
   TableHeader,
@@ -14,8 +13,10 @@ import {
   Input,
   Popover,
   PopoverTrigger,
+  Spinner,
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
+import { useUserInfo } from "@/hooks/useUserInfo";
 
 interface Recipient {
   DeliveryMethod: string;
@@ -86,13 +87,8 @@ interface Template {
 }
 
 export default function Templates() {
-  const [userInfo] = useLocalStorage("userInfo", {
-    appId: "",
-    proxyOrganizationOpenId: "",
-    proxyOperatorOpenId: "",
-    secretId: "",
-    secretKey: "",
-  });
+  const userInfo = useUserInfo();
+  const isClient = useIsClient();
 
   const [templates, setTemplates] = useState<Template[]>([]);
 
@@ -100,11 +96,8 @@ export default function Templates() {
   const [userMobile, setUserMobile] = useState("");
 
   const fetchTemplates = async () => {
-    const response = await fetch("/api", {
+    const response = await fetch("/api/DescribeTemplates", {
       method: "POST",
-      headers: {
-        "X-TC-Action": "DescribeTemplates",
-      },
       body: JSON.stringify({ ...userInfo, payload: {} }),
     });
     const data = await response.json();
@@ -112,11 +105,8 @@ export default function Templates() {
   };
 
   const createFlow = async (templateId: string) => {
-    const response = await fetch("/api", {
+    const response = await fetch("/api/CreateFlowsByTemplates", {
       method: "POST",
-      headers: {
-        "X-TC-Action": "CreateFlowsByTemplates",
-      },
       body: JSON.stringify({
         ...userInfo,
         payload: {
@@ -147,12 +137,26 @@ export default function Templates() {
     }
   };
 
-  useEffectOnce(() => {
-    fetchTemplates();
-  });
-
+  useEffect(() => {
+    isClient && fetchTemplates();
+  }, [isClient]);
+  const createTemplate = async () => {
+    const res = await fetch("/api/ChannelCreateEmbedWebUrl", {
+      method: "POST",
+      body: JSON.stringify({
+        ...userInfo,
+        payload: { EmbedType: "CREATE_TEMPLATE" },
+      }),
+    });
+    try {
+      const data = await res.json();
+      if (data?.WebUrl) {
+        window.open(data.WebUrl);
+      }
+    } catch (e) {}
+  };
   const createFlowForm = (templateId: string) => (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[340px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <p className="text-small font-bold text-foreground" {...titleProps}>
@@ -188,15 +192,13 @@ export default function Templates() {
   );
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container w-full min-w-full mx-auto p-4">
       <h1 className="text-2xl font-bold text-center mb-6">模板列表</h1>
+      <Button color="secondary" onClick={createTemplate}>
+        创建模板
+      </Button>
 
-      <Table
-        aria-label="模板列表"
-        style={{
-          height: "auto",
-        }}
-      >
+      <Table aria-label="模板列表" className="w-full min-w-full my-4">
         <TableHeader>
           <TableColumn>模板名称</TableColumn>
           <TableColumn>模板ID</TableColumn>
@@ -207,9 +209,11 @@ export default function Templates() {
         </TableHeader>
         <TableBody
           emptyContent={
-            <div className="flex justify-center">
-              <Button color="primary">创建模板</Button>
-            </div>
+            <Spinner
+              label="模板加载中"
+              color="default"
+              labelColor="foreground"
+            />
           }
         >
           {templates.map((template) => (
