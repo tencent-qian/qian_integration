@@ -134,7 +134,7 @@ const UserInfoPage: React.FC = () => {
             <AccordionItem
               className="flex flex-col"
               startContent={
-                <div className="gap">
+                <div className="flex gap-3 items-center">
                   <span>
                     <strong>AppId:</strong>
                   </span>
@@ -143,8 +143,6 @@ const UserInfoPage: React.FC = () => {
               }
             >
               <div className="flex flex-col">
-                <strong>AppId:</strong>{" "}
-                <Snippet hideSymbol>{userInfo.appId}</Snippet>
                 <strong>ProxyOrganizationOpenId:</strong>
                 <Snippet hideSymbol>{userInfo.proxyOrganizationOpenId}</Snippet>
                 <strong>ProxyOperatorOpenId:</strong>{" "}
@@ -157,8 +155,8 @@ const UserInfoPage: React.FC = () => {
             </AccordionItem>
           </Accordion>
           <Divider></Divider>
-          <span className="text-xl">功能一览</span>
-          <div className="flex gap-8 px-8 py-8 shadow rounded-lg">
+          <span className="text-l">功能一览</span>
+          <div className="flex gap-8 px-8 py-8">
             <Card
               radius="lg"
               className="px-12 py-12 bg-sky-200 hover:bg-sky-500"

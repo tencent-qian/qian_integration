@@ -4,7 +4,9 @@ import { useLocalStorage, useIsClient } from "usehooks-ts";
 import { useEffect, useState } from "react";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import {
+  Button,
   Chip,
+  Input,
   Spinner,
   Table,
   TableBody,
@@ -13,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
+import { SearchIcon } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface Role {
   RoleId: string;
@@ -64,7 +68,32 @@ export default function Employee() {
   return (
     <div>
       <h1 className={title()}>员工列表</h1>
-      <Table className="my-12" removeWrapper aria-label="员工列表">
+      <Table
+        topContentPlacement="outside"
+        layout={employees.length > 0 ? "auto" : "fixed"}
+        aria-label="员工列表"
+        className="my-4 w-full min-w-full"
+        topContent={
+          <div className="flex gap-8 items-center justify-between ">
+            <Input
+              className="w-1/2"
+              width={100}
+              isClearable
+              placeholder="Type to search templates"
+              startContent={<SearchIcon color="gray" />}
+              endContent={<Button>点击搜索</Button>}
+            />
+            <Button
+              color="secondary"
+              onClick={() => {
+                toast.warning("等你实现~~");
+              }}
+            >
+              添加员工
+            </Button>
+          </div>
+        }
+      >
         <TableHeader>
           <TableColumn>OpenId</TableColumn>
           <TableColumn>姓名</TableColumn>

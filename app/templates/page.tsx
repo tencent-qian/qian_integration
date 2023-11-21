@@ -17,6 +17,7 @@ import {
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { SearchIcon } from "lucide-react";
 
 interface Recipient {
   DeliveryMethod: string;
@@ -160,7 +161,7 @@ export default function Templates() {
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <p className="text-small font-bold text-foreground" {...titleProps}>
-            发给谁
+            补充发起方信息
           </p>
           <div className="mt-2 flex flex-col gap-2 w-full">
             <Input
@@ -194,26 +195,46 @@ export default function Templates() {
   return (
     <div className="container w-full min-w-full mx-auto p-4">
       <h1 className="text-2xl font-bold text-center mb-6">模板列表</h1>
-      <Button color="secondary" onClick={createTemplate}>
-        创建模板
-      </Button>
 
-      <Table aria-label="模板列表" className="w-full min-w-full my-4">
+      <Table
+        topContentPlacement="outside"
+        layout={templates.length > 0 ? "auto" : "fixed"}
+        aria-label="模板列表"
+        className="my-4 w-full min-w-full"
+        topContent={
+          <div className="flex gap-8 items-center justify-between ">
+            <Input
+              className="w-1/2"
+              width={100}
+              isClearable
+              placeholder="Type to search templates"
+              startContent={<SearchIcon color="gray" />}
+              endContent={<Button>点击搜索</Button>}
+            />
+            <Button color="secondary" onClick={createTemplate}>
+              创建模板
+            </Button>
+          </div>
+        }
+      >
         <TableHeader>
-          <TableColumn>模板名称</TableColumn>
-          <TableColumn>模板ID</TableColumn>
-          <TableColumn>创作者</TableColumn>
-          <TableColumn>签署控件数量</TableColumn>
-          <TableColumn>签署方数量</TableColumn>
-          <TableColumn>操作</TableColumn>
+          <TableColumn align="start">模板名称</TableColumn>
+          <TableColumn align="start">模板ID</TableColumn>
+          <TableColumn align="start">创作者</TableColumn>
+          <TableColumn align="start">签署控件数量</TableColumn>
+          <TableColumn align="start">签署方数量</TableColumn>
+          <TableColumn align="start">操作</TableColumn>
         </TableHeader>
         <TableBody
+          className="flex"
           emptyContent={
-            <Spinner
-              label="模板加载中"
-              color="default"
-              labelColor="foreground"
-            />
+            <div className="w-full grow">
+              <Spinner
+                label="模板加载中"
+                color="default"
+                labelColor="foreground"
+              />
+            </div>
           }
         >
           {templates.map((template) => (

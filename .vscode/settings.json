@@ -2,6 +2,11 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
     "Essbasic",
-    "tencentcloud"
+    "lucide",
+    "nextui",
+    "Pressable",
+    "tencentcloud",
+    "toastify",
+    "usehooks"
   ]
 }
