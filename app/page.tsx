@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Input,
   Button,
@@ -10,15 +10,20 @@ import {
   Divider,
   Accordion,
   AccordionItem,
+  Tab,
+  Tabs,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import { useLocalStorage, useIsClient } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import { toast } from "react-toastify";
+import { LogInIcon, User2Icon } from "lucide-react";
+import { title } from "@/components/primitives";
 
 interface UserInfo {
   appId: string;
   proxyOrganizationOpenId: string;
   proxyOperatorOpenId: string;
+  proxyOrganizationName?: string;
 }
 
 interface FormData extends UserInfo {
@@ -36,13 +41,13 @@ interface Employee {
 }
 
 const UserInfoPage: React.FC = () => {
-  const isClient = useIsClient();
   const [userInfo, setUserInfo] = useLocalStorage("userInfo", {
     appId: "",
     proxyOrganizationOpenId: "",
     proxyOperatorOpenId: "",
     secretId: "",
     secretKey: "",
+    proxyOrganizationName: "",
   });
   const [employee, setEmployee] = useState<Employee | null>(null);
   const route = useRouter();
@@ -89,6 +94,32 @@ const UserInfoPage: React.FC = () => {
 
   const handleSubmit = () => {
     fetchUserInfo(userInfo);
+  };
+
+  const handleRegister = async () => {
+    try {
+      const response = await fetch("/api/CreateConsoleLoginUrl", {
+        method: "POST",
+        body: JSON.stringify({
+          ...userInfo,
+          payload: {
+            ProxyOrganizationName: userInfo.proxyOrganizationName,
+          },
+        }),
+      });
+      const data = (await response.json()) as any;
+      if (response.status === 200) {
+        toast.success("获取子客登录链接成功");
+        const url = data?.ConsoleUrl;
+        window.open(url);
+      } else {
+        throw new Error(data?.error);
+      }
+    } catch (e) {
+      toast.dismiss();
+      toast("获取子客登录链接成功失败:" + (e as any).message);
+      console.log(e);
+    }
   };
 
   if (employee) {
@@ -163,68 +194,162 @@ const UserInfoPage: React.FC = () => {
       </Card>
     );
   } else {
-    // 如果用户信息不存在，显示信息填写表单
-    // toast.dismiss();
-    // toast(error.message);
     return (
-      <Card className="shadow-xl transition:ease-in">
+      <Card className="w-[580px]">
         <CardHeader className="flex flex-col font-bold text-xl">
-          请填写您的测试环境的相关信息
+          子客注册or登录
         </CardHeader>
-        <CardBody className="gap-8 px-12 py-5">
-          <Input
-            placeholder="请填写您应用的AppId"
-            required
-            name="appId"
-            label="AppId"
-            labelPlacement="outside"
-            value={userInfo.appId}
-            onChange={handleChange}
-          />
-          <Input
-            required
-            label="ProxyOrganizationOpenId"
-            placeholder="请填写您的ProxyOrganizationOpenId"
-            name="proxyOrganizationOpenId"
-            labelPlacement="outside"
-            value={userInfo.proxyOrganizationOpenId}
-            onChange={handleChange}
-          />
-          <Input
-            required
-            label="ProxyOperator.OpenId"
-            placeholder="请填写ProxyOperator的OpenId"
-            name="proxyOperatorOpenId"
-            labelPlacement="outside"
-            value={userInfo.proxyOperatorOpenId}
-            onChange={handleChange}
-          />
-          <Input
-            required
-            label="SecretId"
-            placeholder="请填写您的Secret Id"
-            name="secretId"
-            labelPlacement="outside"
-            value={userInfo.secretId}
-            onChange={handleChange}
-          />
-          <Input
-            required
-            label="SecretKey"
-            placeholder="请填写您的Secret Key"
-            name="secretKey"
-            type="password"
-            labelPlacement="outside"
-            value={userInfo.secretKey}
-            onChange={handleChange}
-          />
-          <Button
-            className="my-8 mx-12 py-4"
-            onClick={handleSubmit}
-            color="secondary"
-          >
-            提交
-          </Button>
+        <CardBody className="px-12 py-5">
+          <Tabs fullWidth size="md" color="primary" variant="bordered">
+            <Tab
+              key="login"
+              title={
+                <div className="flex items-center space-x-2">
+                  <LogInIcon size={24} />
+                  <span>Login</span>
+                </div>
+              }
+              className="flex flex-col  gap-8"
+            >
+              <Input
+                placeholder="请填写您应用的AppId"
+                required
+                name="appId"
+                label="AppId"
+                variant="bordered"
+                isClearable
+                value={userInfo.appId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                label="ProxyOrganizationOpenId"
+                placeholder="请填写您企业的ProxyOrganizationOpenId"
+                name="proxyOrganizationOpenId"
+                variant="bordered"
+                isClearable
+                value={userInfo.proxyOrganizationOpenId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                label="ProxyOperator.OpenId"
+                placeholder="请填写ProxyOperator的OpenId"
+                name="proxyOperatorOpenId"
+                variant="bordered"
+                isClearable
+                value={userInfo.proxyOperatorOpenId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                label="SecretId"
+                placeholder="请填写您的SecretId"
+                name="secretId"
+                variant="bordered"
+                isClearable
+                value={userInfo.secretId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                variant="bordered"
+                isClearable
+                label="SecretKey"
+                placeholder="请填写您的SecretKey"
+                name="secretKey"
+                type="password"
+                value={userInfo.secretKey}
+                onChange={handleChange}
+              />
+              <Button
+                className="my-8 mx-12 py-4"
+                onClick={handleSubmit}
+                color="primary"
+              >
+                登录
+              </Button>
+            </Tab>
+            <Tab
+              key="register"
+              title={
+                <div className="flex items-center space-x-2">
+                  <User2Icon size={24} />
+                  <span>Register</span>
+                </div>
+              }
+              className="flex flex-col gap-4"
+            >
+              <Input
+                placeholder="请填写您应用的AppId"
+                required
+                name="appId"
+                label="AppId"
+                variant="bordered"
+                isClearable
+                value={userInfo.appId}
+                onChange={handleChange}
+              />
+              <Input
+                placeholder="请填写您的企业名字"
+                required
+                name="proxyOrganizationName"
+                label="proxyOrganizationName"
+                variant="bordered"
+                isClearable
+                value={userInfo.proxyOrganizationName}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                label="ProxyOrganizationOpenId"
+                placeholder="请填写您企业的ProxyOrganizationOpenId"
+                name="proxyOrganizationOpenId"
+                variant="bordered"
+                isClearable
+                value={userInfo.proxyOrganizationOpenId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                variant="bordered"
+                isClearable
+                label="ProxyOperator.OpenId"
+                placeholder="请填写ProxyOperator的OpenId"
+                name="proxyOperatorOpenId"
+                value={userInfo.proxyOperatorOpenId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                label="SecretId"
+                placeholder="请填写您的SecretId"
+                name="secretId"
+                variant="bordered"
+                isClearable
+                value={userInfo.secretId}
+                onChange={handleChange}
+              />
+              <Input
+                required
+                label="SecretKey"
+                placeholder="请填写您的SecretKey"
+                name="secretKey"
+                type="password"
+                variant="bordered"
+                isClearable
+                value={userInfo.secretKey}
+                onChange={handleChange}
+              />
+              <Button
+                className="my-8 mx-12 py-4"
+                onClick={handleRegister}
+                color="primary"
+              >
+                进行子客注册
+              </Button>
+            </Tab>
+          </Tabs>
         </CardBody>
       </Card>
     );
