@@ -54,7 +54,8 @@ export async function POST(
     console.log("------返回结果-----", data);
     return NextResponse.json(data);
   } catch (e) {
-    console.log("------错误信息-----", e);
-    return NextResponse.json({ error: `${e}` }, { status: 500 });
+    const message = (e as any).message;
+    console.log("------错误信息-----", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

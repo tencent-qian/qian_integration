@@ -71,16 +71,18 @@ const UserInfoPage: React.FC = () => {
             Limit: 20,
           },
         }),
-      })
-        .then((res) => res.json())
-        .catch((e) => {});
-
-      const employee = response?.Employees[0] as Employee;
-
-      setEmployee(employee);
+      });
+      const data = (await response.json()) as any;
+      if (response.status === 200) {
+        toast.success("登录成功");
+        const employee = data?.Employees[0] as Employee;
+        setEmployee(employee);
+      } else {
+        throw new Error(data?.error);
+      }
     } catch (e) {
       toast.dismiss();
-      toast((e as any)?.message);
+      toast("登录失败:" + (e as any).message);
       console.log(e);
     }
   };
