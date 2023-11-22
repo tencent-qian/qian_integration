@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useIsClient } from "usehooks-ts";
+import { get } from "lodash";
 import {
   Table,
   TableHeader,
@@ -115,8 +116,13 @@ export default function Templates() {
             {
               FlowName: "勇哥的一个子客A下面的模板创建的流程",
               Deadline: Math.floor(new Date().getTime() / 1000) + 86400 * 30, // 30天后过期
-              TemplateId: templateId, // 这里需要替换为你平台子客自己的模板id
+              TemplateId: templateId,
               FlowApprovers: [
+                {
+                  ApproverType: "ORGANIZATION",
+                  OrganizationOpenId: userInfo.proxyOrganizationOpenId,
+                  OpenId: userInfo.proxyOperatorOpenId,
+                },
                 {
                   //单个签署方，可以配置多个签署方
                   Name: userName,
@@ -129,12 +135,13 @@ export default function Templates() {
       }),
     });
     const data = await response.json();
-    if (data?.FlowIds) {
+    const firstErrorMessage = get(data, "ErrorMessages[0]", "");
+    if (!firstErrorMessage) {
       toast.dismiss();
       toast.success("创建成功");
     } else {
       toast.dismiss();
-      toast.error("创建失败");
+      toast.error("创建失败" + firstErrorMessage);
     }
   };
 

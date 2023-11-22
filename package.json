@@ -31,6 +31,7 @@
     "eslint-config-next": "14.0.2",
     "framer-motion": "^10.16.4",
     "intl-messageformat": "^10.5.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.292.0",
     "next": "14.0.2",
     "next-themes": "^0.2.1",
@@ -44,5 +45,8 @@
     "tencentcloud-sdk-nodejs-essbasic": "^4.0.734",
     "typescript": "5.0.4",
     "usehooks-ts": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.202"
   }
 }
