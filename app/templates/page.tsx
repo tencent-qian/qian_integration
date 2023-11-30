@@ -14,6 +14,7 @@ import {
   Input,
   Popover,
   PopoverTrigger,
+  Selection,
   Spinner,
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
@@ -93,6 +94,9 @@ export default function Templates() {
   const isClient = useIsClient();
 
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
+    new Set([])
+  );
 
   const [userName, setUserName] = useState("");
   const [userMobile, setUserMobile] = useState("");
@@ -106,6 +110,55 @@ export default function Templates() {
     setTemplates(data?.Templates);
   };
 
+  const findTemplateName = (templateId: string) => {
+    const template = templates.find(
+      (template) => template.TemplateId === templateId
+    );
+    return template?.TemplateName || "";
+  };
+  const sendTemplateGroupFlow = async () => {
+    const templateIds =
+      selectedKeys === "all"
+        ? templates.map((template) => template.TemplateId)
+        : Array.from(selectedKeys);
+    console.log(templateIds);
+    const FlowInfos = templateIds.map((templateId) => ({
+      FlowName: findTemplateName(templateId as string) + "合同组",
+      Deadline: Math.floor(new Date().getTime() / 1000) + 86400 * 30, // 30天后过期
+      TemplateId: templateId,
+      FlowApprovers: [
+        {
+          ApproverType: "ORGANIZATION",
+          OrganizationOpenId: userInfo.proxyOrganizationOpenId,
+          OpenId: userInfo.proxyOperatorOpenId,
+        },
+        {
+          Name: userName,
+          Mobile: userMobile,
+        },
+      ],
+    }));
+    const response = await fetch("/api/ChannelCreateFlowGroupByTemplates", {
+      method: "POST",
+      body: JSON.stringify({
+        ...userInfo,
+        payload: {
+          FlowGroupName: "勇哥子客下合同组测试",
+          FlowInfos,
+        },
+      }),
+    });
+    const data = await response.json();
+    const firstErrorMessage = get(data, "ErrorMessages[0]", "");
+    if (!firstErrorMessage) {
+      toast.dismiss();
+      toast.success("创建成功");
+    } else {
+      toast.dismiss();
+      toast.error("创建失败" + firstErrorMessage);
+    }
+  };
+
   const createFlow = async (templateId: string) => {
     const response = await fetch("/api/CreateFlowsByTemplates", {
       method: "POST",
@@ -114,7 +167,7 @@ export default function Templates() {
         payload: {
           FlowInfos: [
             {
-              FlowName: "勇哥的一个子客A下面的模板创建的流程",
+              FlowName: findTemplateName(templateId) + "合同",
               Deadline: Math.floor(new Date().getTime() / 1000) + 86400 * 30, // 30天后过期
               TemplateId: templateId,
               FlowApprovers: [
@@ -163,7 +216,7 @@ export default function Templates() {
       }
     } catch (e) {}
   };
-  const createFlowForm = (templateId: string) => (
+  const createFlowForm = (templateId: string | null) => (
     <PopoverContent className="w-[340px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
@@ -188,7 +241,7 @@ export default function Templates() {
             <Button
               color="secondary"
               onClick={() => {
-                createFlow(templateId);
+                templateId ? createFlow(templateId) : sendTemplateGroupFlow();
               }}
             >
               确认发起
@@ -205,6 +258,10 @@ export default function Templates() {
 
       <Table
         topContentPlacement="outside"
+        selectionMode="multiple"
+        color="secondary"
+        selectedKeys={selectedKeys}
+        onSelectionChange={setSelectedKeys}
         layout={templates.length > 0 ? "auto" : "fixed"}
         aria-label="模板列表"
         className="my-4 w-full min-w-full"
@@ -275,6 +332,23 @@ export default function Templates() {
           ))}
         </TableBody>
       </Table>
+      {templates.length > 1 &&
+      (selectedKeys === "all" || selectedKeys.size > 1) ? (
+        <Popover
+          key="group-flow"
+          showArrow
+          offset={10}
+          placement="bottom"
+          backdrop="blur"
+        >
+          <PopoverTrigger>
+            <Button color="secondary" variant="flat" className="capitalize">
+              发起合同组
+            </Button>
+          </PopoverTrigger>
+          {createFlowForm(null)}
+        </Popover>
+      ) : null}
     </div>
   );
 }
