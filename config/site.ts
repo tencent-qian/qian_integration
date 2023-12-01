@@ -1,8 +1,8 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Next.js + NextUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "腾讯电子签三方应用集成demo",
+  description: "腾讯电子签三方应用集成demo，用于测试你的应用",
   navItems: [
     {
       label: "Home",
